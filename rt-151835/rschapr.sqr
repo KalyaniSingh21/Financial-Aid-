@@ -1,0 +1,932 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+! REPORT:   Freshmen/Transfer Scholarship Eligible/Calc Report
+!
+! SCRIPT:   fin$exe:rschapr.sqr
+!
+! DESC:     This report reviews Freshmen and Transfer scholarships.
+!
+!	    - For those deemed eligible it enters the amt on RPASCHL
+!           - For those deemed ineligible it creates a mail merge record
+!             used to create the reject letter and enters into GURMAIL table
+!
+! INPUT:    Term 
+!           (A)udit or (U)pdate
+!
+! OUTPUT:   RSCHAPR.LIS
+!
+! KEYWORDS: "SCHOLARSHIP"
+!
+! AUTHOR:   Andy Harradine
+!
+! CREATED:  11-FEB-2007
+!
+! MODIFICATION HISTORY:
+!
+!  10-Feb-12 LAB  Changed min GPA for freshmen from 90 to 88 in 
+!		  fp_fres_tran_schl_eligible, max EFC ranges, include only
+!		  student with a valid EFC, change "D" status to "U", removed
+!		  all references to SCHFRR/SCHTRR since not being selected
+!		  anyway, only process reviewed & denied if they don't already
+!	          have a reject letter and preset the satisfied(S) to reviewed
+!		  and denied(U) if ineligible before going into main select (to
+!		  simplify), ONLY update satisfied(S) to reviewed and processed(R)
+!		  if they are eligible.  Also added check for international
+!		  student.
+!
+!
+!
+!
+! 26-FEB-2015 MJT changes made according to RT#130793
+! 05-JAN-2017 JWB 
+!   RT:151835
+!   * Change maximum award to 5100
+!   * Change minimum award to 2100
+!   * Remove the EFC adjustment for students with EFC between $10K
+!       and $20K (-$500)
+!   * Add an additional 1000 to all Music applicants (with 5100 max) 
+!       Music admission codes are: 9152, 9196, 9315, 9335, 9351, 9366
+!   * STEM: Add Exercise Science (9226) and Community Health (9575)
+!   * Change GOAPGEO to Region 7
+! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+Begin-Setup
+ Page-Size 5000 5000  ! defunct SQR command - may have to change it
+End-Setup
+
+
+
+begin-procedure header
+Print  &report_date (1,1)
+print $tab (,,)
+print &institution  (,,)
+print $tab (,,)
+Print $term_code (,,)
+print $tab (,,)
+Print $report-title (+1,1)
+print $tab (,,)
+Print $report-title2 (+1,1)
+print $tab (,,) 
+print 'INTERNATIONAL STUDENT' (+1,1)
+print $tab (,,)
+print 'Name' (,,)
+print $tab (,,)
+print 'U status' (,,)
+print $tab (,,)
+print 'ID' (,,)
+print $tab (,,)
+print 'SCHXXX Code' (,,)
+print $tab (,,)
+print 'GPA' (,,)
+print $tab (,,)
+print 'SAT Combined' (,,)
+print $tab (,,)
+print 'ACT Complete' (,,)
+print $tab (,,)
+print 'EFC' (,,)
+print $tab (,,)
+print 'SEL GRP' (,,)
+print $tab (,,)
+print 'BASE AWARD' (,,)
+print $tab (,,)
+print 'PGI +/-' (,,)
+print $tab (,,)
+print 'SELG +/-' (,,)
+print $tab (,,)
+print 'CMP1 +/-' (,,)
+print $tab (,,)
+print 'CMP2 +/-' (,,)
+print $tab (,,)
+print 'CMP3 +/-' (,,)
+print $tab (,,)
+print 'STEAM' (,,)
+print $tab (,,)
+print 'CMP4 +/-' (,,)
+print $tab (,,)
+print 'AWARD AMT' (,,)
+print $tab (,,)
+end-procedure !header
+ 
+begin-procedure print_data
+print $inter (+1,1)
+print $tab (,,)
+print $name (,,)
+print $tab (,,)
+print $trst_code (,,)
+print $tab (,,)
+print $pnum (,,)
+print $tab (,,)
+print $treq_code (,,)
+print $tab (,,)
+print $GPA (,,)
+print $tab (,,)
+print $SAT (,,)
+print $tab (,,)
+print $ACT (,,)
+print $tab (,,)
+print #pgi (,,)
+print $tab (,,)
+print $saraatt_atts_code (,,)
+print $tab (,,)
+print #scholarship_base_amount (,,)
+print $tab (,,)
+print #atts_differential (,,)
+print $tab (,,)
+print #pgi_differential (,,)
+print $tab (,,)
+print #list1_differential (,,)
+print $tab (,,)
+print  #list2_differential (,,)
+print $tab (,,)
+print #list3_differential (,,)
+print $tab (,,)
+print #stem (,,)
+print $tab (,,)
+print #list4_differential (,,)
+print $tab (,,) 
+print #scholarship_amount (,,)
+print $tab (,,) 
+
+end-procedure !end print_data
+
+
+
+Begin-Program
+
+ Do get_input
+
+ Do get_one_time_data
+
+ Do initialize
+
+ Do Preset_Ineligibles
+ 
+ Do header
+ 
+ Do main
+
+ Do print_totals 
+
+ Do delete_collector
+
+ close 1
+
+ if $audit_update = 'U'
+     commit
+   else
+     rollback
+ end-if
+
+ SHOW (18,9) CLEAR-LINE
+End-Program
+
+
+
+
+
+begin-procedure get_one_time_data
+!This procedure establishes the following values:
+!&report_date, &aidy_code,&institution,$report-title,$report-title2
+!vars that start with & are returned from an SQL query
+begin-select
+STVTERM_FA_PROC_YR &aidy_code
+from stvterm 
+where stvterm_code = $term_code
+end-select
+
+begin-select
+to_char(SYSDATE,'fmMonth DD, YYYY') &report_date
+from sys.dual
+end-select
+
+begin-select
+gubinst_name &institution
+from gubinst
+end-select
+
+  let #report-rmargin = 132
+  let #inst-len = length(&institution)
+  let #inst-pos = floor((#report-rmargin - #inst-len)/2)
+
+  let $report-title = 'Freshmen/Transfer Scholarship Application Review/Calc Report'
+  let #title-len = length($report-title) 
+  let #title-pos = floor((#report-rmargin - #title-len)/2)
+  let $report-title2 = '(Eligible Students)'
+  let #title2-len = length($report-title2)
+  let #title2-pos = floor((#report-rmargin - #title2-len)/2)
+
+end-procedure !  
+                                             
+begin-procedure initialize
+ encode '<9>' Into $tab ! These encode statements set tab and cr spacing 
+ encode '<13>' Into $cr
+
+!Below sets adress types for a stored address procedure
+
+ let $atyp = '1AT'
+ Do insert_collector
+ let $atyp = '2MA'
+ Do insert_collector
+ let $atyp = '3P1'
+ Do insert_collector
+ let $atyp = '4FA'
+ Do insert_collector
+ 
+ ! the output for this job is an excel file.
+ !The tab is used for spacing, i.e. a tab delimited file.
+ 
+ let $POT_DATA = GetEnv('POT_DATA')
+ let $file = $POT_DATA || '/fin/rschapr_address.xls'
+ Open $file  As 1 For-Writing Record=250 status=#opened  
+
+ let $outstr = 'First Name'||$tab||'Last Name'||$tab||'Street1'||$tab||
+               'Street2'||$tab||'City'||$tab||'State'||$tab||'Zip'
+ write 1 from $outstr:250
+
+end-procedure
+ 
+       
+
+
+
+!	This procedure was created to simplify the main procedure.  It will
+!	preset any satisfied(S) tracking code to reviewed and denied(U) if
+!	ineligible based on test scores, gpa or SUNY selectivity
+Begin-Procedure Preset_Ineligibles
+  Move 'U' to $trst_code
+Begin-Select
+fp_fres_tran_schl_eligible(rrrareq_pidm)			&Generally_Eligible
+f_get_recruit_gpa_spot(rrrareq_pidm)				&Admission_GPA
+NVL(fp_get_student_selectivity(rrrareq_pidm,$term_code),'none')	&SUNY_Selectivity
+rrrareq_treq_code						&preset_treq
+rrrareq_pidm							&preset_pidm
+
+  Move &preset_pidm to #pidm
+  Move &preset_treq to $treq_code
+
+  Move 'N' To $preset_eligible
+  If &preset_treq = 'SCHTRA' 
+     If &Generally_Eligible = 'Y'
+        Move 'Y' To $preset_eligible
+     End-If
+  Else
+     If (&Generally_Eligible = 'Y' and &Admission_GPA >= 85
+	      and Not InStr('SS5,SS7', &SUNY_Selectivity, 1) )  !remove 3 & 4 per susan MJT 
+        Move 'Y' To $preset_eligible
+     End-If
+  End-If
+
+  If $preset_eligible = 'N'
+     Do update_rrrareq_status_ind
+  End-If
+   
+From rrrareq
+where exists (select 'has an isir' 
+                  from rrrareq x
+                  where x.rrrareq_pidm = rrrareq_pidm 
+                      and x.rrrareq_aidy_code = &aidy_code 
+                      and x.rrrareq_treq_code = 'ISIR') 
+      and not exists (select 'has valid EFC' 
+                      from rrrareq i
+                      where i.rrrareq_pidm = rrrareq_pidm 
+                            and i.rrrareq_aidy_code = &aidy_code 
+                            and i.rrrareq_treq_code = 'NODATA'
+		            and i.rrrareq_trst_code = 'E')                
+      and rrrareq_treq_code in ('SCHFRE','SCHTRA')
+      and rrrareq_trst_code = 'S'
+      and rrrareq_aidy_code = &aidy_code 
+End-Select
+End-Procedure
+
+
+
+
+
+
+
+                                     
+Begin-Procedure Main                     
+
+ move 'Y' to $first_time_flag
+
+ move #0 to #total_eligible_students
+ move #0 to #total_ineligible_students
+ move #0 to #total_scholarship_moneys_awards
+
+Begin-Select
+DeCode(rrrareq_trst_code,'S','Y','N')		&eligible
+rrrareq_treq_code 				
+rrrareq_pidm      
+   move &rrrareq_treq_code to $treq_code
+   move &rrrareq_pidm to #pidm
+   if &eligible <> $previous_eligible and $first_time_flag <> 'Y'
+      new-page
+      let $report-title2 = '(Ineligible Students)'
+      let #title2-len = length($report-title2)
+      let #title2-pos = floor((#report-rmargin - #title2-len)/2)
+   end-if
+   
+   let $internat = 'N'
+   
+   !$inter indicates INTERNATIONAL STUDENT
+   let $inter = ' '
+   
+  do check_for_international
+   If #Intl_Student
+      move 'Y' to $inter
+   End-If
+   
+ 
+   
+   if $first_time_flag = 'Y' 
+      move 'N' to $first_time_flag
+   end-if
+   move &eligible to $previous_eligible    
+
+   if &eligible = 'Y'
+      add 1 to #total_eligible_students
+   else 
+      add 1 to #total_ineligible_students
+   end-if
+
+      
+substr(spriden_last_name||', '||substr(spriden_first_name,1,1)||' '||substr(spriden_mi,1,1),1,25)  &name
+	Move &name to $name
+rrrareq_trst_code 
+
+   if &rrrareq_trst_code = 'U'
+      let $trst_code = '*'
+   end-if
+
+f_potsdam_id2(spriden_pidm) &pnum
+	move &pnum to $pnum
+
+   move &rrrareq_treq_code to $treq_code
+
+fp_ad_transfer_gpa(rrrareq_pidm) &transfer_gpa
+f_get_recruit_gpa_spot(rrrareq_pidm) &hsch_gpa
+
+   if &rrrareq_treq_code = 'SCHTRA'
+     move &transfer_gpa to $GPA
+   else
+      move &hsch_gpa to $GPA
+   end-if
+
+fp_sat_math_and_verb_cmbd(rrrareq_pidm) &SAT  !Sat Scores
+	move &SAT to $SAT
+fp_act_composite(rrrareq_pidm) &ACT !ACTscores
+	move &ACT to $ACT
+
+fp_fa_efc(rrrareq_pidm,rrrareq_aidy_code) &pgi
+	move &pgi to #pgi
+
+    move 0 to #scholarship_base_amount
+    move 0 to #scholarship_max_award
+
+!     LAB 2/10/12 move the $crane_flag = 'N' outside of if since wasn't being preset
+    move 'N' to $crane_flag        
+    if &eligible = 'Y'
+      move 'N' to $crane_flag        
+      do check_crane
+      if &rrrareq_treq_code = 'SCHFRE'
+         move 2100 to #scholarship_base_amount !aah 1/30/08 was 2500 
+         move 2100 to #scholarship_min_award   !aah 1/30/08 new
+         if $crane_flag = 'Y' 
+           move 5100 to #scholarship_max_award !kde 3/2/09 new
+         else
+           move 5100 to #scholarship_max_award !kde 3/2/09 was 5000
+         end-if
+         let $schl_fund_code = 'I003' 
+         move 8 to #schl_number_of_terms
+      end-if
+      if &rrrareq_treq_code = 'SCHTRA'
+         move 2100 to #scholarship_base_amount 
+         move 2100 to #scholarship_min_award   !aah 1/30/08 new
+         move 5100 to #scholarship_max_award
+         let $schl_fund_code = 'I004'
+         move 4 to #schl_number_of_terms
+      end-if
+    end-if  ! if &eligible = Y
+ 
+    
+
+    do check_saraatt
+     
+
+    
+    move 0 to #pgi_differential
+  
+    if #pgi >= 3000 and #pgi <= 9999 
+       move 1000 to #pgi_differential
+    end-if
+ 
+    
+                                         
+    move 0 to #atts_differential
+
+    if &rrrareq_treq_code = 'SCHFRE'
+
+      if $saraatt_atts_code = 'SS1'
+         move 500 to #atts_differential
+      end-if
+      if $saraatt_atts_code = 'SS2'
+         move 1000 to #atts_differential
+      end-if
+    end-if
+
+   
+ 
+    move 'N' to $applied_flag          !List 1
+    move 0 to #list1_differential
+
+       move '002829' to $college          !SLU
+    do check_applied_other_college
+       move '002699' to $college          !Clarkson
+    do check_applied_other_college
+       move '002849' to $college          !Plattsburgh
+    do check_applied_other_college
+       move '002848' to $college          !Oswego
+    do check_applied_other_college
+
+    if $applied_flag = 'Y' and &rrrareq_treq_code = 'SCHFRE' and 
+       $crane_flag <> 'Y'                                   
+       move 1000 to #list1_differential
+    end-if
+    if $applied_flag = 'Y' and &rrrareq_treq_code = 'SCHTRA'  and 
+       $crane_flag <> 'Y'                                   
+       move 500 to #list1_differential
+    end-if
+ 
+    
+
+    move 'N' to $applied_flag          !List 2
+    move 0 to #list2_differential
+
+    if &rrrareq_treq_code = 'SCHFRE'  and #list1_differential =  0 and
+         $crane_flag <> 'Y'              
+
+          move '002847' to $college          !Oneonta
+      do check_applied_other_college
+          move '002846' to $college          !New Paltz
+      do check_applied_other_college
+          move '002843' to $college          !Cortland
+      do check_applied_other_college
+          move '002845' to $college          !Geneseo
+      do check_applied_other_college
+          move '002748' to $college          !Lemoyne
+      do check_applied_other_college
+          move '002816' to $college          !Siena
+      do check_applied_other_college
+          move '002821' to $college          !St. John Fisher
+      do check_applied_other_college
+
+      if $applied_flag = 'Y' 
+         move 500 to #list2_differential
+      end-if
+    end-if 
+
+	move 0 to #scholarship_amount
+   
+	if #pgi >= 20000
+          move 1000 to #scholarship_amount
+    else
+         let #scholarship_amount =  #scholarship_base_amount +  
+                               #pgi_differential +
+                               #atts_differential +
+                               #list1_differential +
+                               #list2_differential  
+       end-if
+                               
+
+    
+    
+    !MJT 26-FEB-2015 creating a #list3_differential for CMP3 and #list4_differential for CMP4 column
+    !Add a $1000 CMP3 for all who applied to Fredonia (002844 FAFSA code) or Ithaca (002739 FAFSA code) RT#130793
+     
+        move '002844' to $college          !Fredonia
+      do check_applied_other_college
+          move '002739' to $college          !Ithaca
+      do check_applied_other_college
+      
+      
+      move 0 to #list3_differential
+     
+     
+    
+    
+      
+      !the difference between the existing award and the max.
+      let #diff = #scholarship_max_award - #scholarship_amount
+      
+
+      
+      if ($crane_flag = 'Y' and #scholarship_amount < #scholarship_max_award)
+         		
+         	if (#diff < 1000 )
+         		move #diff to #list3_differential
+         	else
+         		move 1000 to #list3_differential
+         	end-if	
+      end-if
+       
+       !print CMP3 line
+      
+      
+      !see if the student is eligible for $1000 in STEM 
+      !$STEM is set in the STEM procedure
+       
+      !check the scholarship amt after each new award. do not exceed #scholarship_max_award
+      let #scholarship_amount = #scholarship_amount + #list3_differential
+      
+      !the difference between the existing award and the max.
+      let #diff = #scholarship_max_award - #scholarship_amount
+       
+       
+       !set #stem to 0
+       move 0 to #stem
+       do STEM !checks to see if student is STEM eligible
+       
+       if ($STEM = 'Y' and $crane_flag <> 'Y' and #scholarship_amount < #scholarship_max_award )
+       		if (#diff < 1000)
+         		move #diff to #stem
+         	else
+         		move 1000 to #stem
+         	end-if	
+       end-if
+ 
+       !check the scholarship amt after each new award. do not exceed #scholarship_max_award
+      let #scholarship_amount = #scholarship_amount + #stem 
+      
+      !the difference between the existing award and the max.
+      let #diff = #scholarship_max_award - #scholarship_amount
+ 
+       
+      !reset cmp4
+      move 0 to #list4_differential
+      
+      
+      
+      
+      !award CMP4 MJT 05-MAR-15
+      if (&hsch_gpa >= 88 and &hsch_gpa <=90)
+      	do calc_cmp4
+      			if ($CMP4 = 'YES' and #scholarship_amount < #scholarship_max_award )
+      		  		 if (#diff < 2500 )
+         				move #diff to  #list4_differential
+         			else
+         				move 2500 to  #list4_differential
+         			end-if	
+      		end-if	
+      end-if	
+       
+       
+        let #scholarship_amount =  #scholarship_amount + #list4_differential
+       
+        
+    if &eligible = 'Y'
+
+        
+
+       if #scholarship_amount < #scholarship_min_award 
+          move #scholarship_min_award to #scholarship_amount
+       end-if
+       if #scholarship_amount > #scholarship_max_award 
+          move #scholarship_max_award to #scholarship_amount
+       end-if
+       
+
+       add #scholarship_amount to #total_scholarship_moneys_awarded
+       
+         
+       do insert_rpbschl_record
+    else
+       do create_reject_letter 
+    end-if
+
+   do print_data
+
+    If &rrrareq_trst_code = 'S'
+       move 'R' to $trst_code
+       do update_rrrareq_status_ind
+    End-If
+
+from spriden, rrrareq x
+where spriden_change_ind is null
+      and spriden_pidm = x.rrrareq_pidm
+      and exists (select 'NYer'
+			from SPRADDR s
+			where s.SPRADDR_PIDM = x.rrrareq_pidm
+			and s.SPRADDR_STAT_CODE = 'NY'
+			and s.SPRADDR_ATYP_CODE = 'MA'
+			and s.SPRADDR_SEQNO  = (select max(SPRADDR_SEQNO)
+		                              from SPRADDR
+		                              where SPRADDR_PIDM = s.SPRADDR_PIDM
+		                              and SPRADDR_ATYP_CODE = s.SPRADDR_ATYP_CODE)) 
+      and (exists (select 'has an isir' 
+                  from rrrareq 
+                  where rrrareq_pidm = x.rrrareq_pidm 
+                      and rrrareq_aidy_code = &aidy_code 
+                      and rrrareq_treq_code = 'ISIR') 
+	   or
+	   exists (select 'intl student'
+		   from sorcont 
+		   where sorcont_pidm = x.rrrareq_pidm
+		      and sorcont_ctyp_code = 'C36')
+	  )
+      and not exists (select 'has valid EFC' 
+                      from rrrareq 
+                      where rrrareq_pidm = x.rrrareq_pidm 
+                            and rrrareq_aidy_code = &aidy_code 
+                            and rrrareq_treq_code = 'NODATA'
+		            and rrrareq_trst_code = 'E')                
+     and (x.rrrareq_treq_code in ('SCHFRE','SCHTRA')
+          and (x.rrrareq_trst_code = 'S'
+	       or (x.rrrareq_trst_code = 'U' and not exists (select 'p' from gurmail g
+						where g.gurmail_pidm = rrrareq_pidm
+						and g.gurmail_aidy_code = &aidy_code
+						and g.gurmail_date_printed is not null
+						and g.gurmail_letr_code = 'SC_ADM_SCHL_DE')
+                 )
+             )
+        ) 
+
+    and x.rrrareq_aidy_code = &aidy_code 
+   
+!order by 1 DESC, 2,4 
+Order By DeCode(rrrareq_trst_code,'S','Y','N') Desc, rrrareq_treq_code, spriden_last_name, spriden_first_name
+End-Select
+End-Procedure
+
+
+begin-procedure check_saraatt
+
+ move '' to $saraatt_atts_code
+
+begin-select 
+max(saraatt_atts_code) &saraatt_atts_code
+from saraatt x
+where saraatt_pidm = &rrrareq_pidm and
+      saraatt_term_code = $term_code and
+      saraatt_appl_no  = (select max(saraatt_appl_no)
+                          from saraatt
+                          where saraatt_pidm = x.saraatt_pidm)  
+end-select
+ move &saraatt_atts_code to $saraatt_atts_code
+END-procedure
+
+begin-procedure check_applied_other_college
+                                
+begin-select 
+'x'
+ move 'Y' to $applied_flag 
+
+From rcrapp3,RCRAPP1
+Where RCRAPP1_PIDM = &rrrareq_pidm
+        And RCRAPP1_AIDY_CODE = &aidy_code
+        And rcrapp1_curr_rec_ind = 'Y'
+        And rcrapp3_pidm = rcrapp1_pidm
+        And rcrapp3_aidy_code = rcrapp1_aidy_code
+        And rcrapp3_infc_code = rcrapp1_infc_code
+        And rcrapp3_seq_no = rcrapp1_seq_no
+        and (rcrapp1_fed_coll_choice_1 = $college or
+             rcrapp1_fed_coll_choice_2 = $college or
+             rcrapp1_fed_coll_choice_3 = $college or
+             rcrapp3_fed_coll_choice_4 = $college or
+             rcrapp3_fed_coll_choice_5 = $college or
+             rcrapp3_fed_coll_choice_6 = $college)    
+end-select
+END-procedure
+
+
+
+
+Begin-Procedure check_for_international
+  Move 0 To #Intl_Student
+Begin-Select
+'intl student'		&intl_ind
+  Move 1 To #Intl_Student
+From sorcont
+where sorcont_pidm = #pidm
+      and sorcont_ctyp_code = 'C36'
+End-Select
+End-Procedure
+
+
+Begin-Procedure calc_cmp4
+!-------------------------------------------------------------------------------------------
+!For students from Region 7 (identified in GOAPGEO, field--Jayne is supposed to be sending me 
+!and I will forward) with a HS GPA of 88-90 add a CMP4 of <=$2500, not to exceed max.
+!RT#130793 MJT 05-MAR-2015
+!-------------------------------------------------------------------------------------------  
+move 'NO' to $CMP4
+Begin-Select
+'REGION 7'
+	move 'YES' to $CMP4
+from GORPGEO
+where GORPGEO_PIDM = #pidm
+and   GORPGEO_GEOR_CODE = 'AD_REGION7'
+End-Select
+End-Procedure !end calc_cmp4
+
+! This is similar to the STEM procedure - we set the $crane_flag to Y
+! if the student has any of the given codes.
+begin-procedure check_crane
+let $crane_flag = 'N'
+begin-select
+'Y' &crane_flag
+	MOVE &crane_flag TO $crane_flag
+from SORLFOS x
+where x.SORLFOS_MAJR_CODE in ('9152', '9196', '9315', '9335', '9351', '9366')
+and x.SORLFOS_PIDM = #pidm
+and x.SORLFOS_TERM_CODE = $term_code
+and x.SORLFOS_SEQNO = (select max(SORLFOS_SEQNO) from SORLFOS where SORLFOS_PIDM =x.SORLFOS_PIDM and SORLFOS_TERM_CODE =x.SORLFOS_TERM_CODE )
+end-select
+end-procedure
+
+begin-procedure insert_rpbschl_record
+begin-sql
+insert into rpbschl ( RPBSCHL_PIDM,
+                      RPBSCHL_FUND_CODE,
+                      RPBSCHL_SOURCE_FUND_CODE,
+                      RPBSCHL_NUMBER_OF_TERMS,
+                      RPBSCHL_ORIG_OFFER_DATE,
+                      RPBSCHL_ACTIVITY_DATE,
+                      RPBSCHL_SOURCE_AMT )
+            values  ( &rrrareq_pidm,
+                      $schl_fund_code,
+                      null,
+                      #schl_number_of_terms,
+                      sysdate,
+                      sysdate,
+                      #scholarship_amount)
+end-sql
+!END-IF
+end-procedure
+
+begin-procedure create_reject_letter
+
+begin-select
+
+spvadds_first_name &fname
+spvadds_last_name  &lname
+spvadds_street_line1 &line1
+spvadds_street_line2 &line2
+spvadds_city &city
+spvadds_stat_code &state
+substr(spvadds_zip,1,5) &zip
+ 
+ let $outstr = &fname||$tab||&lname||$tab||&line1||$tab||&line2||$tab||
+               &city||$tab||&state||$tab||&zip
+ write 1 from $outstr:250
+from spvadds where spvadds_pidm = &rrrareq_pidm
+
+end-select
+
+begin-sql
+
+insert into gurmail
+                    (gurmail_pidm,
+                     gurmail_system_ind,
+                     gurmail_term_code,
+                     gurmail_letr_code,
+                     gurmail_date_printed,
+                     gurmail_user,
+                     gurmail_activity_date,
+                     gurmail_aidy_code )
+            values ( &rrrareq_pidm,
+                     'R',
+                     $term_code,
+                     'SC_ADM_SCHL_DE',
+                      sysdate,
+                      user,
+                      sysdate,
+                      &aidy_code)
+end-sql            
+end-procedure
+
+
+
+begin-procedure update_rrrareq_status_ind
+
+begin-sql
+
+update rrrareq 
+set rrrareq_trst_code = $trst_code,
+    rrrareq_activity_date = sysdate
+where rrrareq_aidy_code = &aidy_code and
+      rrrareq_pidm = #pidm and
+      rrrareq_treq_code = $treq_code
+end-sql
+end-procedure
+
+
+Begin-procedure print_totals
+
+ new-page
+ move 'Y' to $report_totals_flag
+ let $report-title2 = '(Report Totals)'
+ let #title2-len = length($report-title2)
+ let #title2-pos = floor((#report-rmargin - #title2-len)/2)
+ print 'Total Eligible Students     :' (,1,)
+ print #total_eligible_students (,+3,) edit 9,999,999
+ print 'Total Ineligible Students   :'  (+1,1,)
+ print #total_ineligible_students (,+3,) edit 9,999,999
+ print 'Total Scholarship $ Awarded :'  (+1,1,)
+ print #total_scholarship_moneys_awarded (,+3,) edit 9,999,999
+ print 'Report Mode : ' (+2,1,)
+ if $audit_update = 'A'
+   print 'Audit' (,,)
+ else
+   print 'Update' (,,)
+ end-if
+print $report-title (+1,1)
+end-procedure
+
+BEGIN-PROCEDURE GET_INPUT
+! This procedure prompts the user for the Application term parameter.
+! There is erorr an check that looks to see if the term entered is valid
+
+BEGIN-SELECT
+to_char( max(FGPGENL_ACTIVITY_DATE), 'DD-MON-YYYY') &DEFAULT_DATE
+FROM FIMSMGR.FGPGENL
+END-SELECT
+
+  SHOW CLEAR-SCREEN (3,19) BOLD
+      'S C H O L A R S H I P  A P P L  R E V I E W'
+ASK_AGAIN:
+  SHOW NORMAL
+  SHOW (9,9) CLEAR-LINE
+  SHOW (9,9)  'Enter the Application Term Code : '
+  INPUT $TERM_CODE      NOPROMPT MAXLEN=6  TYPE=CHAR
+  SHOW (18,9) CLEAR-LINE
+  MOVE 'N' TO $VALID_TERM
+
+BEGIN-SELECT 
+'Y' &VALID_TERM
+  MOVE &VALID_TERM TO $VALID_TERM
+FROM dual 
+WHERE EXISTS (SELECT 'X' FROM STVTERM WHERE STVTERM_CODE = $TERM_CODE)
+END-SELECT
+
+IF $VALID_TERM <> 'Y' 
+  SHOW (12,9) 'YOU MUST HAVE GOOFED UP SOMEWHERE, PLEASE RE-ENTER'
+ GOTO ASK_AGAIN
+END-IF
+  SHOW NORMAL
+  SHOW (12,9) CLEAR-LINE
+  SHOW (12,9) 'Enter (A)udit or (U)pdate Mode  : '
+  input $audit_update noprompt maxlen=1 type=char
+  uppercase $audit_update
+  SHOW (14,9) CLEAR-LINE
+  SHOW (18,9) 'Processing..............'
+
+END-PROCEDURE
+
+begin-procedure insert_collector
+
+begin-sql
+insert into saturn.sprcolr
+(SPRCOLR_SESSIONID,
+ SPRCOLR_TYPE,
+ SPRCOLR_VALUE_DATE,
+ SPRCOLR_VALUE_ATYP,
+ SPRCOLR_ACTIVITY_DATE,
+ SPRCOLR_JOB,
+ SPRCOLR_PARM_NUMBER)
+values
+(to_char(USERENV('SESSIONID')),
+ 'A',
+ SYSDATE,
+ $atyp,
+ SYSDATE,
+ NULL,
+ NULL)
+end-sql
+ !commit
+end-procedure
+
+begin-procedure delete_collector
+begin-sql
+delete from saturn.sprcolr
+where sprcolr_sessionid = (select
+to_char(userenv('SESSIONID')) from dual);
+end-sql
+end-procedure
+
+begin-procedure STEM
+!This procedure will check if a student has a STEM major
+!For all please add a column for an indicator if the student's field of study "interest" is a STEM program with appropriate APC code (9093, 9217, 9275, 9286, 9313, 9316, 9327, 9334, 9342, 9387).RT#130793
+!after meeting with Susan students will get $1000 from STEM
+let $STEM = 'N'
+
+begin-select
+'Y' &STEM
+	MOVE &STEM TO $STEM
+from SORLFOS x
+where x.SORLFOS_MAJR_CODE in ('9093', '9217', '9226', '9275', '9286', '9313', '9316', '9327', '9334', '9342', '9387', '9575')
+and x.SORLFOS_PIDM = #pidm
+and x.SORLFOS_TERM_CODE = $term_code
+and x.SORLFOS_SEQNO = (select max(SORLFOS_SEQNO) from SORLFOS where SORLFOS_PIDM =x.SORLFOS_PIDM and SORLFOS_TERM_CODE =x.SORLFOS_TERM_CODE )
+end-select
+end-procedure !STEM
