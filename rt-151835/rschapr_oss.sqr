@@ -38,6 +38,12 @@
 !
 !
 ! 26-FEB-2015 MJT changes made according to RT#130793. This is the version for out of state students 
+! 5-MAY-2017 KS
+! RT:151835
+!   For 'SCHTRA' applicants -> out-of-state
+!   * Change base award to $5000
+!   * Change minimum award to $5000
+!   * Change maximum award to $10000
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
