@@ -462,7 +462,7 @@ fp_fa_efc(rrrareq_pidm,rrrareq_aidy_code) &pgi
     end-if
     if $applied_flag = 'Y' and &rrrareq_treq_code = 'SCHTRA'  and 
        $crane_flag <> 'Y'                                   
-       move 500 to #list1_differential
+       move 1000 to #list1_differential !changed on 5/22/2017 was $500 before
     end-if
  
     
