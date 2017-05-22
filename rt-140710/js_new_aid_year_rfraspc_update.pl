@@ -10,15 +10,12 @@ AUTHOR:         Kalyani Singh (KS)
 DATE:           2017-19-05
 
 DESCRIPTION:    RT:140710
-                This script creates a population selection.
-                Based on the Popsel Selection ID that is passed in, it runs
-                a query specifically designed for that selection.
+                This SQL script cannot be run until the job ROPROLL is run.
+                ROPROLL is a baseline job that copies the funds in the RFRASPC table
+                from one aid year to another aid year.
 
-                It also creates an output file that lists the students
-                in the population selection.
-
-                TODO: It will eventually get the selection query from a 
-                database package instead of from separate SQL files.
+                Once ROPROLL is run, then this SQL script can be run,
+                it will update the amounts for these funds.
 
 PARAMETERS:     Previous Aid Year
                 Next Aid Year
