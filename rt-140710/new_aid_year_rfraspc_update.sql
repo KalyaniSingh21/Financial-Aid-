@@ -1,7 +1,27 @@
 /*
-  Sue wants me to update the below fields on RFRMGMT from the previous aid year
-  for all funds and she will correct any that need it.
+new_aid_year_rfraspc_update.sql
+
+AUTHOR:        Kalyani Singh (KS)
+
+DATE:          2017-19-05
+
+DESCRIPTION:   JWB - Sue wants me to update the below fields on RFRMGMT
+               from the previous aid year
+               for all funds and she will correct any that need it.
+
+               RT:140710
+               This SQL script cannot be run until the job ROPROLL is run.
+               ROPROLL is a baseline job that copies the funds in the RFRASPC table
+               from one aid year to another aid year.
+
+               Once ROPROLL is run, then this SQL script can be run,
+               it will update the amounts for these funds.
+
+PARAMETERS:    Previous Aid Year
+               Next Aid Year
 */
+
+
 declare
 v_fund                           RFRASPC.RFRASPC_FUND_CODE%TYPE;
 v_aidy                           RFRASPC.RFRASPC_AIDY_CODE%TYPE;

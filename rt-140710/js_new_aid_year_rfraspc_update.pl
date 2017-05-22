@@ -10,15 +10,14 @@ AUTHOR:         Kalyani Singh (KS)
 DATE:           2017-19-05
 
 DESCRIPTION:    RT:140710
-                This SQL script cannot be run until the job ROPROLL is run.
-                ROPROLL is a baseline job that copies the funds in the RFRASPC table
-                from one aid year to another aid year.
+                PL file calling SQL file to update the amount of funds after
+                ROPROLL is run.
 
-                Once ROPROLL is run, then this SQL script can be run,
-                it will update the amounts for these funds.
+                Check new_aid_year_rfraspc_update.sql for more details
 
 PARAMETERS:     Previous Aid Year
                 Next Aid Year
+
 =cut
 
 use strict;
@@ -42,6 +41,7 @@ my (
     $prev_aid_year,
     $next_aid_year
 ) = @ARGV;
+
 # If this came from job submission, call get_js_params to get the parameters.
 if ($prev_aid_year =~ /^js_/) {
 	(
