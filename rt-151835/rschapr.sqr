@@ -408,8 +408,8 @@ fp_fa_efc(rrrareq_pidm,rrrareq_aidy_code) &pgi
          move 8 to #schl_number_of_terms
       end-if
       if &rrrareq_treq_code = 'SCHTRA'
-         move 2100 to #scholarship_base_amount 
-         move 2100 to #scholarship_min_award   !aah 1/30/08 new
+         move 1500 to #scholarship_base_amount !added new on 5/22/2017 was 2100
+         move 1500 to #scholarship_min_award   !aah 1/30/08 new  ! added new on 5/22/2017 was 2100
          move 5100 to #scholarship_max_award
          let $schl_fund_code = 'I004'
          move 4 to #schl_number_of_terms
