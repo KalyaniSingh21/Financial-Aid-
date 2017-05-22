@@ -48,6 +48,13 @@
 !       Music admission codes are: 9152, 9196, 9315, 9335, 9351, 9366
 !   * STEM: Add Exercise Science (9226) and Community Health (9575)
 !   * Change GOAPGEO to Region 7
+
+! 5-MAY-2017 KS
+! RT:151835
+!   For 'SCHTRA' applicants -> in-state
+!   * Change base award to $1500
+!   * Change minimum award to $1500
+!   * Change maximum award to $5100
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
