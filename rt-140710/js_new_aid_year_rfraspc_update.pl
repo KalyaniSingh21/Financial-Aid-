@@ -60,8 +60,8 @@ my $report_file =
 	
 my $cmd = 
     "sqlplus / @/${sql_file} " .
-    "${prev_aid_year} ${next_aid_year}";
-    
+    "${prev_aid_year} ${next_aid_year} ${report_file}";
+
 exec_cmd($cmd);
 if ($? != 0) {
     croak($cmd, $ENV{RUNUSER}, $0) && die "Croaked $!";
