@@ -20,7 +20,21 @@ DESCRIPTION:   JWB - Sue wants me to update the below fields on RFRMGMT
 PARAMETERS:    Previous Aid Year
                Next Aid Year
 */
+set serveroutput on
+set feedback off
+set pagesize 0
+set verify off
+set heading on
+set echo off
+set linesize 100
+set timing off
 
+/* Take previous aid year and next aid year as input */
+define prev_aidy = &1
+define working_aidy = &2
+
+/* The last parameter is the output file path. */
+spool &3
 
 declare
 v_fund                           RFRASPC.RFRASPC_FUND_CODE%TYPE;
@@ -118,3 +132,7 @@ exception
       DBMS_OUTPUT.put_line(SQLERRM);
 
 END;
+
+/
+spool off
+exit
