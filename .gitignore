@@ -33,3 +33,5 @@ inc/
 /MANIFEST.bak
 /pm_to_blib
 /*.zip
+Backups/rt-151835/rschapr.sqr
+Backups/rt-151835/rschapr_oss.sqr
