@@ -95,11 +95,11 @@ print 'CMP1 +/-' (,,)
 print $tab (,,)
 print 'CMP2 +/-' (,,)
 print $tab (,,)
-print 'CMP3 +/-' (,,)
+print 'Music' (,,) ! changed on 5/25/2017 was CMP3 +/-
 print $tab (,,)
 print 'STEAM' (,,)
 print $tab (,,)
-print 'CMP4 +/-' (,,)
+print 'WNY' (,,)  ! changed on 5/25/2017 was CMP4 +/-
 print $tab (,,)
 print 'AWARD AMT' (,,)
 print $tab (,,)
@@ -501,9 +501,11 @@ fp_fa_efc(rrrareq_pidm,rrrareq_aidy_code) &pgi
 
     
     
-    !MJT 26-FEB-2015 creating a #list3_differential for CMP3 and #list4_differential for CMP4 column
-    !Add a $1000 CMP3 for all who applied to Fredonia (002844 FAFSA code) or Ithaca (002739 FAFSA code) RT#130793
-     
+
+
+
+    !MJT 26-FEB-2015 creating a #list3_differential for Music and #list4_differential for WNY column
+    !Add a $1000 Music for all who applied to Fredonia (002844 FAFSA code) or Ithaca (002739 FAFSA code) RT#130793
         move '002844' to $college          !Fredonia
       do check_applied_other_college
           move '002739' to $college          !Ithaca
@@ -530,10 +532,8 @@ fp_fa_efc(rrrareq_pidm,rrrareq_aidy_code) &pgi
          	end-if	
       end-if
        
-       !print CMP3 line
-      
-      
-      !see if the student is eligible for $1000 in STEM 
+
+       !print Music line
       !$STEM is set in the STEM procedure
        
       !check the scholarship amt after each new award. do not exceed #scholarship_max_award
@@ -562,13 +562,18 @@ fp_fa_efc(rrrareq_pidm,rrrareq_aidy_code) &pgi
       let #diff = #scholarship_max_award - #scholarship_amount
  
        
-      !reset cmp4
+
+
+      !reset WNY
       move 0 to #list4_differential
       
       
       
-      
-      !award CMP4 MJT 05-MAR-15
+
+
+
+
+      !award WNY MJT 05-MAR-15
       if (&hsch_gpa >= 88 and &hsch_gpa <=90)
       	do calc_cmp4
       			if ($CMP4 = 'YES' and #scholarship_amount < #scholarship_max_award )
