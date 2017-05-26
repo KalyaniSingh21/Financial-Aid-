@@ -133,10 +133,12 @@ begin
         exit when driving_cursor%notfound;
 
         open insert_record_gurmail;
+        -- Insert a email record in gurmail to keep a record of communication with student
         close insert_record_gurmail;
 
 
         open update_sap_tracking;
+        -- update sap tracking code  
         close update_sap_tracking;
 
 
