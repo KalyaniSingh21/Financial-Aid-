@@ -55,6 +55,43 @@ cursor driving_cursor is
         spriden_first_name
 ;
 
+cursor insert_record_gurmail is
+
+    insert into general.gurmail
+              (gurmail_pidm,
+               gurmail_system_ind,
+               gurmail_term_code,
+               gurmail_letr_code,
+               gurmail_module_code,
+               gurmail_admin_identifier,
+               gurmail_matl_code_mod,
+               gurmail_date_init,
+               gurmail_date_printed,
+               gurmail_user,
+               gurmail_wait_days,
+               gurmail_pub_gen,
+               gurmail_init_code,
+               gurmail_orig_ind,
+               gurmail_activity_date,
+               gurmail_aidy_code )
+     values ( PIDM form the driving cursor,
+              'R',
+              '999999',
+              'FA_SAP_EMAIL',
+               null,
+               null,
+               null,
+               null,
+               sysdate,
+               user,
+               null,
+               null,
+               null,
+               null,
+               sysdate,
+               '&term_code');
+
+
 begin
 
     dbms_output.enable(1000000);
