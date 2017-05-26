@@ -34,6 +34,8 @@ first_name  spriden.spriden_first_name%type;
 p_number    spriden.spriden_id%type;
 email       goremal.goremal_email_address%type;
 sap_code    rorsapr.rorsapr_sapr_code%type;
+student_pidm spriden.spriden_pidm%type;
+
 
 cursor driving_cursor is
 
@@ -42,8 +44,9 @@ cursor driving_cursor is
         spriden_first_name,
         fp_spriden_id(rorsapr_pidm),
         fp_get_email_addr(rorsapr_pidm, 'ON', 'A'),
-        rorsapr_sapr_code
-    from 
+        rorsapr_sapr_code,
+        spriden_pidm
+    from
         rorsapr, spriden
     where 1=1
         and spriden_pidm = rorsapr_pidm
@@ -74,7 +77,7 @@ cursor insert_record_gurmail is
                gurmail_orig_ind,
                gurmail_activity_date,
                gurmail_aidy_code )
-     values ( PIDM form the driving cursor,
+     select ( student_pidm,
               'R',
               '999999',
               'FA_SAP_EMAIL',
@@ -89,7 +92,9 @@ cursor insert_record_gurmail is
                null,
                null,
                sysdate,
-               '&term_code');
+               '&term_code')
+      where student_pidm = gurmail_pidm;
+
 
 
 begin
@@ -109,7 +114,7 @@ begin
 
     loop
         fetch driving_cursor into
-            last_name, first_name, p_number, email, sap_code;
+            last_name, first_name, p_number, email, sap_code, student_pidm;
         --Stop the loop when there is no more data:
         exit when driving_cursor%notfound;
 
