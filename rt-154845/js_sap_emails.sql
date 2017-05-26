@@ -133,7 +133,6 @@ begin
         exit when driving_cursor%notfound;
 
         open insert_record_gurmail;
-        -- Insert
         close insert_record_gurmail;
 
 
