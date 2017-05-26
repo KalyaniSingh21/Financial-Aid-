@@ -24,7 +24,8 @@ set timing off
 -- &1 == Term Code
 -- &2 == CSV File Path
 define term_code = &1
-spool &2
+define aid_year = &2
+spool &3
 
 declare
 delim       constant char := ',';

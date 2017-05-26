@@ -54,6 +54,7 @@ open( STDERR,   ">>$log_file") || warn "Not able to open $log_file.  $!";
 log_updt();
 
 my $term_code = $ARGV[0];
+my $aid_year = $ARGV[1];
 
 if($term_code =~ /^js_/) {
     ($term_code) = get_js_params($term_code);
@@ -70,7 +71,7 @@ my $csv_file = "$data_dir/$script_name$timestamp.csv";
 
 # The SQL file takes two parameters: Term Code and CSV File
 my $cmd_sql = "sqlplus / @ $sql_file " .
-              "$term_code $csv_file";
+              "$term_code $aid_year $csv_file";
 exec_cmd($cmd_sql);
 if ( $? != 0 ) { croak($cmd_sql, $ENV{RUNUSER}, $0 ) && die "Croaked $!"; }
 log_updt();
