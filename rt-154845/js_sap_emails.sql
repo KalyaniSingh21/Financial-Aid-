@@ -35,7 +35,7 @@ p_number    spriden.spriden_id%type;
 email       goremal.goremal_email_address%type;
 sap_code    rorsapr.rorsapr_sapr_code%type;
 student_pidm spriden.spriden_pidm%type;
-
+param_student_pidm spriden.spriden_pidm%type;
 
 cursor driving_cursor is
 
@@ -58,7 +58,7 @@ cursor driving_cursor is
         spriden_first_name
 ;
 
-cursor insert_record_gurmail is
+cursor insert_record_gurmail(param_student_pidm) is -- parameter from driving cursor
 
     insert into general.gurmail
               (gurmail_pidm,
@@ -77,7 +77,7 @@ cursor insert_record_gurmail is
                gurmail_orig_ind,
                gurmail_activity_date,
                gurmail_aidy_code )
-     select ( student_pidm,
+     select  param_student_pidm,
               'R',
               '999999',
               'FA_SAP_EMAIL',
@@ -92,17 +92,18 @@ cursor insert_record_gurmail is
                null,
                null,
                sysdate,
-               '&term_code')
-      where student_pidm = gurmail_pidm;
+               '&term_code'
+      from spriden ,gurmail
+      where param_student_pidm = gurmail_pidm;
 
 
-cursor update_sap_tracking is
+cursor update_sap_tracking(param_student_pidm) is -- parameter from driving cursor
 
       UPDATE RRRAREQ y
       SET y.rrrareq_trst_code = 'R'
       WHERE y.rrrareq_aidy_code = '&aid_year'
       and   y.rrrareq_treq_code = 'SAP'
-      and   y.rrrareq_pidm = student_pidm
+      and   y.rrrareq_pidm = param_student_pidm
       and  exists (select 'RORSAPR_SAPR_CODE is U, W, R, P or B'
                           from RORSAPR z
                           where 1=1
@@ -132,13 +133,13 @@ begin
         --Stop the loop when there is no more data:
         exit when driving_cursor%notfound;
 
-        open insert_record_gurmail;
+        open insert_record_gurmail(student_pidm);
         -- Insert a email record in gurmail to keep a record of communication with student
         close insert_record_gurmail;
 
 
-        open update_sap_tracking;
-        -- update sap tracking code  
+        open update_sap_tracking(student_pidm);
+        -- update sap tracking code
         close update_sap_tracking;
 
 
