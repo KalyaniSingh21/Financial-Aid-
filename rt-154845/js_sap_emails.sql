@@ -113,9 +113,8 @@ begin
                    null,
                    null,
                    sysdate,
-                   '&term_code'
-          from spriden ,gurmail
-          where student_pidm = gurmail_pidm;
+                   '&aid_year'
+          from dual;
 
           dbms_output.put_line ("Inserted Value");
           UPDATE RRRAREQ y
