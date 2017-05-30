@@ -87,8 +87,8 @@ my $csv_file = "$data_dir/$script_name$timestamp.csv";
 printw("try running sql command");
 
 # The SQL file takes two parameters: Term Code and CSV File
-my $cmd_sql = "sqlplus / @ $sql_file " .
-              "$term_code $aid_year $csv_file";
+my $cmd_sql = "sqlplus / @ $sql_file ". "$term_code $aid_year $csv_file";
+
 printw($cmd_sql);
 exec_cmd($cmd_sql);
 
