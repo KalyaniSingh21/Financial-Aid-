@@ -33,3 +33,6 @@ inc/
 /MANIFEST.bak
 /pm_to_blib
 /*.zip
+Backups/rt-151835/rschapr.sqr
+Backups/rt-151835/rschapr_oss.sqr
+rt-154845/js_sap_emails_2017-05-26-155217.csv
