@@ -57,61 +57,7 @@ cursor driving_cursor is
         spriden_last_name,
         spriden_first_name
 ;
-/*
-cursor insert_record_gurmail(param_student_pidm) is -- parameter from driving cursor
 
-    insert into general.gurmail
-              (gurmail_pidm,
-               gurmail_system_ind,
-               gurmail_term_code,
-               gurmail_letr_code,
-               gurmail_module_code,
-               gurmail_admin_identifier,
-               gurmail_matl_code_mod,
-               gurmail_date_init,
-               gurmail_date_printed,
-               gurmail_user,
-               gurmail_wait_days,
-               gurmail_pub_gen,
-               gurmail_init_code,
-               gurmail_orig_ind,
-               gurmail_activity_date,
-               gurmail_aidy_code )
-     select  param_student_pidm,
-              'R',
-              '999999',
-              'FA_SAP_EMAIL',
-               null,
-               null,
-               null,
-               null,
-               sysdate,
-               user,
-               null,
-               null,
-               null,
-               null,
-               sysdate,
-               '&term_code'
-      from spriden ,gurmail
-      where param_student_pidm = gurmail_pidm;
-
-
-cursor update_sap_tracking(param_student_pidm) is -- parameter from driving cursor
-
-      UPDATE RRRAREQ y
-      SET y.rrrareq_trst_code = 'R'
-      WHERE y.rrrareq_aidy_code = '&aid_year'
-      and   y.rrrareq_treq_code = 'SAP'
-      and   y.rrrareq_pidm = param_student_pidm
-      and  exists (select 'RORSAPR_SAPR_CODE is U, W, R, P or B'
-                          from RORSAPR z
-                          where 1=1
-                                and z.rorsapr_pidm = y.rrrareq_pidm
-                                and z.rorsapr_term_code ='&term_code'
-                                and z.rorsapr_sapr_code in ('U','W','R','P','B'));
-
-*/
 begin
 
     dbms_output.enable(1000000);
@@ -184,14 +130,6 @@ begin
                                     and z.rorsapr_term_code ='&term_code'
                                     and z.rorsapr_sapr_code in ('U','W','R','P','B'));
             dbms_output.put_line ("Updated Value");
-      --  open insert_record_gurmail(student_pidm);
-        -- Insert a email record in gurmail to keep a record of communication with student
-      --  close insert_record_gurmail;
-
-
-      --  open update_sap_tracking(student_pidm);
-        -- update sap tracking code
-      --  close update_sap_tracking;
 
 
         --Print the data:
