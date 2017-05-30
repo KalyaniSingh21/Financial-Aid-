@@ -35,28 +35,25 @@ p_number    spriden.spriden_id%type;
 email       goremal.goremal_email_address%type;
 sap_code    rorsapr.rorsapr_sapr_code%type;
 student_pidm spriden.spriden_pidm%type;
-param_student_pidm spriden.spriden_pidm%type;
 
 cursor driving_cursor is
 
     select
         spriden_last_name,
         spriden_first_name,
-        fp_spriden_id(rorsapr_pidm),
+        fp_spriden_id(rorsapr_pidm),  --- change to spriden_pidm
         fp_get_email_addr(rorsapr_pidm, 'ON', 'A'),
         rorsapr_sapr_code,
         spriden_pidm
     from
         rorsapr, spriden
-    where 1=1
-        and spriden_pidm = rorsapr_pidm
+    where spriden_pidm = rorsapr_pidm
         and spriden_change_ind is null
         and rorsapr_term_code = '&term_code'
         and rorsapr_lock_ind = 'Y'
     order by
         spriden_last_name,
-        spriden_first_name
-;
+        spriden_first_name;
 
 begin
 
