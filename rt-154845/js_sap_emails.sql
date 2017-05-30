@@ -117,7 +117,7 @@ begin
     dbms_output.enable(1000000);
 
     open driving_cursor;
-
+    dbms_output.put_line ("In driving cursor");
         --Print the header:
         dbms_output.put_line (
             'Last Name' || delim ||
@@ -131,6 +131,8 @@ begin
         fetch driving_cursor into
             last_name, first_name, p_number, email, sap_code, student_pidm;
         --Stop the loop when there is no more data:
+
+        dbms_output.put_line (student_pidm);
         exit when driving_cursor%notfound;
 
         insert into general.gurmail
@@ -169,7 +171,7 @@ begin
           from spriden ,gurmail
           where student_pidm = gurmail_pidm;
 
-
+          dbms_output.put_line ("Inserted Value");
           UPDATE RRRAREQ y
           SET y.rrrareq_trst_code = 'R'
           WHERE y.rrrareq_aidy_code = '&aid_year'
@@ -181,7 +183,7 @@ begin
                                     and z.rorsapr_pidm = y.rrrareq_pidm
                                     and z.rorsapr_term_code ='&term_code'
                                     and z.rorsapr_sapr_code in ('U','W','R','P','B'));
-
+            dbms_output.put_line ("Updated Value");
       --  open insert_record_gurmail(student_pidm);
         -- Insert a email record in gurmail to keep a record of communication with student
       --  close insert_record_gurmail;
