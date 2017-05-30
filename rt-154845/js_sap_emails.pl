@@ -57,8 +57,10 @@ my $term_code = $ARGV[0];
 my $aid_year = $ARGV[1];
 
 if($term_code =~ /^js_/) {
-    ($term_code) = get_js_params($term_code);
-} 
+    ($term_code,
+     $aid_year
+    ) = get_js_params($term_code);
+}
 else {
     printw("Enter the term code (e.g. 201602)");
     $term_code = <STDIN>;
