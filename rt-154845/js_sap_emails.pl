@@ -53,30 +53,50 @@ open( LOG_FILE, ">$log_file" );
 open( STDERR,   ">>$log_file") || warn "Not able to open $log_file.  $!";
 log_updt();
 
-my $term_code = $ARGV[0];
-my $aid_year = $ARGV[1];
+printw("Take parameters");
+# my $term_code = $ARGV[0];
+# my $aid_year = $ARGV[1];
+
+my (
+  $term_code,
+  $aid_year
+) = @ARGV;
 
 if($term_code =~ /^js_/) {
     ($term_code,
      $aid_year
     ) = get_js_params($term_code);
 }
-else {
+printw("Done with parameters");
+=begin
+ else {
     printw("Enter the term code (e.g. 201602)");
     $term_code = <STDIN>;
+    printw("Enter the aid year (e.g. 1617)");
+    $aid_year = <STDIN>;
 }
+=cut
+
 chomp($term_code);
+chomp($aid_year);
 
 my $timestamp = time2str('_%Y-%m-%d-%H%M%S', time);
 my $sql_file = "$scripts_dir/$script_name.sql";
 my $csv_file = "$data_dir/$script_name$timestamp.csv";
 
+printw("try running sql command");
+
 # The SQL file takes two parameters: Term Code and CSV File
 my $cmd_sql = "sqlplus / @ $sql_file " .
               "$term_code $aid_year $csv_file";
+printw($cmd_sql);
 exec_cmd($cmd_sql);
+
+printw("ran sql command");
 if ( $? != 0 ) { croak($cmd_sql, $ENV{RUNUSER}, $0 ) && die "Croaked $!"; }
 log_updt();
+
+
 
 my $ftp_share = '/shares/finaid/reports/sap_emails';
 my $ftp_file = "$data_dir/$script_name.ftp";
