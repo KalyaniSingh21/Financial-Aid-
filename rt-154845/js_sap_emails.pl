@@ -67,15 +67,14 @@ if($term_code =~ /^js_/) {
      $aid_year
     ) = get_js_params($term_code);
 }
-printw("Done with parameters");
-=begin
- else {
-    printw("Enter the term code (e.g. 201602)");
+
+else {
+    printw("Enter the term code: e.g. 201609");
     $term_code = <STDIN>;
-    printw("Enter the aid year (e.g. 1617)");
+    printw("Enter the aid year e.g. 1617");
     $aid_year = <STDIN>;
 }
-=cut
+printw("Done with parameters");
 
 chomp($term_code);
 chomp($aid_year);
