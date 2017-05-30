@@ -78,7 +78,7 @@ begin
         dbms_output.put_line (student_pidm);
         exit when driving_cursor%notfound;
 
-        insert into general.gurmail
+      /*  insert into general.gurmail
                   (gurmail_pidm,
                    gurmail_system_ind,
                    gurmail_term_code,
@@ -95,7 +95,7 @@ begin
                    gurmail_orig_ind,
                    gurmail_activity_date,
                    gurmail_aidy_code )
-         select  student_pidm,
+         values   (student_pidm,
                   'R',
                   '999999',
                   'FA_SAP_EMAIL',
@@ -110,10 +110,10 @@ begin
                    null,
                    null,
                    sysdate,
-                   '&aid_year'
-          from dual;
+                   '&aid_year');
 
           dbms_output.put_line ("Inserted Value");
+
           UPDATE RRRAREQ y
           SET y.rrrareq_trst_code = 'R'
           WHERE y.rrrareq_aidy_code = '&aid_year'
@@ -126,6 +126,7 @@ begin
                                     and z.rorsapr_term_code ='&term_code'
                                     and z.rorsapr_sapr_code in ('U','W','R','P','B'));
             dbms_output.put_line ("Updated Value");
+*/
 
 
         --Print the data:
