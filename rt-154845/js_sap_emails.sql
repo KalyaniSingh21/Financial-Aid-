@@ -76,14 +76,16 @@ begin
         --Stop the loop when there is no more data:
         exit when driving_cursor%notfound;
 
-        --Print the data:
-        dbms_output.put_line (
-            last_name || delim ||
-            first_name || delim ||
-            p_number || delim ||
-            email || delim ||
-            sap_code
-        );
+          --Print the data:
+          dbms_output.put_line (
+              last_name || delim ||
+              first_name || delim ||
+              p_number || delim ||
+              email || delim ||
+              sap_code
+          );
+
+
     end loop;
 
 end;
