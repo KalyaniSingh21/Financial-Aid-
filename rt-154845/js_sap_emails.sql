@@ -79,40 +79,42 @@ begin
         exit when driving_cursor%notfound;
 
         insert into general.gurmail
-                    (gurmail_pidm,
-                     gurmail_system_ind,
-                     gurmail_term_code,
-                     gurmail_letr_code,
-                     gurmail_module_code,
-                     gurmail_admin_identifier,
-                     gurmail_matl_code_mod,
-                     gurmail_date_init,
-                     gurmail_date_printed,
-                     gurmail_user,
-                     gurmail_wait_days,
-                     gurmail_pub_gen,
-                     gurmail_init_code,
-                     gurmail_orig_ind,
-                     gurmail_activity_date,
-                     gurmail_aidy_code )
-           values   (student_pidm,
-                    'R',
-                    '999999',
-                    'FA_SAP_EMAIL',
-                     null,
-                     null,
-                     null,
-                     null,
-                     sysdate,
-                     user,
-                     null,
-                     null,
-                     null,
-                     null,
-                     sysdate,
-                     '&aid_year');
-
-        dbms_output.put_line('Inserted Value');
+                  (gurmail_pidm,
+                   gurmail_system_ind,
+                   gurmail_term_code,
+                   gurmail_letr_code,
+                   gurmail_module_code,
+                   gurmail_admin_identifier,
+                   gurmail_matl_code_mod,
+                   gurmail_date_init,
+                   gurmail_date_printed,
+                   gurmail_user,
+                   gurmail_wait_days,
+                   gurmail_pub_gen,
+                   gurmail_init_code,
+                   gurmail_orig_ind,
+                   gurmail_activity_date,
+                   gurmail_aidy_code )
+         select    student_pidm,
+                  'R',
+                  '999999',
+                  'FA_SAP_EMAIL',
+                   null,
+                   null,
+                   null,
+                   null,
+                   sysdate,
+                   user,
+                   null,
+                   null,
+                   null,
+                   null,
+                   sysdate,
+                   '1617'
+          from dual
+          where not exists(
+          select * from gurmail where gurmail_pidm = student_pidm
+          );
 
         UPDATE RRRAREQ y
         SET y.rrrareq_trst_code = 'R'
