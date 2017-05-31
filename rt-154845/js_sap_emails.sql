@@ -92,7 +92,8 @@ begin
                                   and z.rorsapr_pidm = y.rrrareq_pidm
                                   and z.rorsapr_term_code ='&term_code'
                                   and z.rorsapr_sapr_code in ('U','W','R','P','B'));
-          dbms_output.put_line ("Updated Value");
+                                  
+          dbms_output.put_line ('Updated Value');
 
           --Print the data:
           dbms_output.put_line (
