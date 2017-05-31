@@ -78,8 +78,6 @@ begin
         --Stop the loop when there is no more data:
         exit when driving_cursor%notfound;
 
-        dbms_output.put_line (student_pidm);
-
         insert into general.gurmail
                     (gurmail_pidm,
                      gurmail_system_ind,
@@ -127,8 +125,6 @@ begin
                                   and z.rorsapr_pidm = y.rrrareq_pidm
                                   and z.rorsapr_term_code ='&term_code'
                                   and z.rorsapr_sapr_code in ('U','W','R','P','B'));
-
-        dbms_output.put_line ('Updated Value');
 
           --Print the data:
         dbms_output.put_line (
