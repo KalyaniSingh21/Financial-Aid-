@@ -80,6 +80,41 @@ begin
 
         dbms_output.put_line (student_pidm);
 
+        insert into general.gurmail
+                    (gurmail_pidm,
+                     gurmail_system_ind,
+                     gurmail_term_code,
+                     gurmail_letr_code,
+                     gurmail_module_code,
+                     gurmail_admin_identifier,
+                     gurmail_matl_code_mod,
+                     gurmail_date_init,
+                     gurmail_date_printed,
+                     gurmail_user,
+                     gurmail_wait_days,
+                     gurmail_pub_gen,
+                     gurmail_init_code,
+                     gurmail_orig_ind,
+                     gurmail_activity_date,
+                     gurmail_aidy_code )
+           values   (student_pidm,
+                    'R',
+                    '999999',
+                    'FA_SAP_EMAIL',
+                     null,
+                     null,
+                     null,
+                     null,
+                     sysdate,
+                     user,
+                     null,
+                     null,
+                     null,
+                     null,
+                     sysdate,
+                     '&aid_year');
+
+        dbms_output.put_line('Inserted Value');
 
         UPDATE RRRAREQ y
         SET y.rrrareq_trst_code = 'R'
@@ -92,11 +127,11 @@ begin
                                   and z.rorsapr_pidm = y.rrrareq_pidm
                                   and z.rorsapr_term_code ='&term_code'
                                   and z.rorsapr_sapr_code in ('U','W','R','P','B'));
-                                  
-          dbms_output.put_line ('Updated Value');
+
+        dbms_output.put_line ('Updated Value');
 
           --Print the data:
-          dbms_output.put_line (
+        dbms_output.put_line (
               last_name || delim ||
               first_name || delim ||
               p_number || delim ||
