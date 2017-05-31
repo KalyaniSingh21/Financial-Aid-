@@ -34,6 +34,7 @@ first_name  spriden.spriden_first_name%type;
 p_number    spriden.spriden_id%type;
 email       goremal.goremal_email_address%type;
 sap_code    rorsapr.rorsapr_sapr_code%type;
+student_pidm spriden.spriden_pidm%type;
 
 cursor driving_cursor is
 
@@ -42,7 +43,8 @@ cursor driving_cursor is
         spriden_first_name,
         fp_spriden_id(rorsapr_pidm),
         fp_get_email_addr(rorsapr_pidm, 'ON', 'A', 'Y'),
-        rorsapr_sapr_code
+        rorsapr_sapr_code,
+        spriden_pidm
     from
         rorsapr, spriden
     where 1=1
@@ -72,10 +74,11 @@ begin
 
     loop
         fetch driving_cursor into
-            last_name, first_name, p_number, email, sap_code;
+            last_name, first_name, p_number, email, sap_code, student_pidm;
         --Stop the loop when there is no more data:
         exit when driving_cursor%notfound;
 
+        dbms_output.put_line (student_pidm);
 
 
         UPDATE RRRAREQ y
