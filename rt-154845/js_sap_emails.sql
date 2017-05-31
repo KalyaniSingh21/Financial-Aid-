@@ -76,6 +76,21 @@ begin
         --Stop the loop when there is no more data:
         exit when driving_cursor%notfound;
 
+
+
+        UPDATE RRRAREQ y
+        SET y.rrrareq_trst_code = 'R'
+        WHERE y.rrrareq_aidy_code = '&aid_year'
+        and   y.rrrareq_treq_code = 'SAP'
+        and   y.rrrareq_pidm = student_pidm
+        and  exists (select 'RORSAPR_SAPR_CODE is U, W, R, P or B'
+                            from RORSAPR z
+                            where 1=1
+                                  and z.rorsapr_pidm = y.rrrareq_pidm
+                                  and z.rorsapr_term_code ='&term_code'
+                                  and z.rorsapr_sapr_code in ('U','W','R','P','B'));
+          dbms_output.put_line ("Updated Value");
+
           --Print the data:
           dbms_output.put_line (
               last_name || delim ||
