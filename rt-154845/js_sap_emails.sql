@@ -36,6 +36,7 @@ email       goremal.goremal_email_address%type;
 sap_code    rorsapr.rorsapr_sapr_code%type;
 student_pidm spriden.spriden_pidm%type;
 
+
 cursor driving_cursor is
 
     select
@@ -51,7 +52,7 @@ cursor driving_cursor is
         and spriden_pidm = rorsapr_pidm
         and spriden_change_ind is null
         and rorsapr_term_code = '&term_code'
-        and rorsapr_lock_ind = 'Y'
+      --  and rorsapr_lock_ind = 'Y'  commented on 5/31/2017 KS
     order by
         spriden_last_name,
         spriden_first_name
