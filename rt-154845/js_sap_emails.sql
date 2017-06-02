@@ -147,7 +147,7 @@ begin
                              from RORSAPR z
                              where z.rorsapr_pidm = y.rrrareq_pidm
                                    and z.rorsapr_term_code ='&term_code'
-                                   and z.rorsapr_sapr_code is 'X');
+                                   and z.rorsapr_sapr_code = 'X');
 
    -- Update tracking code 'E' for SAPR Codes is anthing other than U, W, R, P or B
         UPDATE RRRAREQ y
