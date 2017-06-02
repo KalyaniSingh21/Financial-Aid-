@@ -9,6 +9,11 @@
                   This script is used by js_sap_emails.pl to generate
                   a CSV file of students who have a locked Eligibility
                   Status record for the given term code.
+
+
+MODIFICATION HISTORY : RT - 154845 KS 2-MAY-2017
+                       Added insert and updation functionality using aid year
+                       as parameter. Removed the constraint on rorsapr_lock_ind.
 */
 
 set serveroutput on
@@ -79,6 +84,8 @@ begin
         --Stop the loop when there is no more data:
         exit when driving_cursor%notfound;
 
+
+        -- Insert the email communication in GURMAIL table
         insert into general.gurmail
                   (gurmail_pidm,
                    gurmail_system_ind,
@@ -117,8 +124,11 @@ begin
           select * from gurmail where gurmail_pidm = student_pidm
           );
 
+    -- Update tracking code 'R' for SAPR Codes U, W, R, P or B
+   -- Update tracking code 'D' for SAPR Codes X
         UPDATE RRRAREQ y
         SET y.rrrareq_trst_code = 'R'
+   -- Update tracking code 'E' for SAPR Codes is anthing other than U, W, R, P or B
         WHERE y.rrrareq_aidy_code = '&aid_year'
         and   y.rrrareq_treq_code = 'SAP'
         and   y.rrrareq_pidm = student_pidm
