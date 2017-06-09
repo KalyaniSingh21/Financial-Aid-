@@ -127,9 +127,9 @@ exec_cmd($bash_cmd);
 # "REREX$aid_year_substr":
 $ENV{'PROG'}="REREX$aid_year_substr";   # KS 09-JUN-2017 new parameter added, was 'REREX17'
 $sqlplus_cmd = $sqlplus_template;
-$sqlplus_cmd =~ s/\[job\]/"rerex$aid_year_substr"/g;  # KS 09-JUN-2017 new parameter added, was s/\[job\]/"rerex17"/g
+$sqlplus_cmd =~ s/\[job\]/rerex$aid_year_substr/g;  # KS 09-JUN-2017 new parameter added, was s/\[job\]/"rerex17"/g
 $bash_cmd = $bash_template;
-$bash_cmd =~ s/\[job\]/"rerex$aid_year_substr"/g;  # KS 09-JUN-2017 new parameter added, was s/\[job\]/rerex17/g
+$bash_cmd =~ s/\[job\]/rerex$aid_year_substr/g;  # KS 09-JUN-2017 new parameter added, was s/\[job\]/rerex17/g
 print "$ENV{'PROG'} \n";
 print "$sqlplus_cmd \n";
 print "$bash_cmd \n";
