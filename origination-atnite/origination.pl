@@ -69,7 +69,7 @@ $ENV{'PSWD'}='i8bamb';
 my $aid_year = '1718';
 my $one_up_no = '42';
 
-my $aid_year_substr = substr $aid_year 0,2; # KS 09-JUN-2017 new parameter added
+my $aid_year_substr = substr $aid_year, 2, 2; # KS 09-JUN-2017 new parameter added
 
 $ENV{'ONE_UP'}= $one_up_no;
 
