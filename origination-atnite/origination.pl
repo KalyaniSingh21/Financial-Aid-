@@ -80,7 +80,7 @@ my @output_files = (
     "rppspgm_${one_up_no}.log",
     "rppspgm_${one_up_no}.lis",
     "rerex".$aid_year_substr."_".${one_up_no}.".log", # KS 09-JUN-2017 new parameter added, was rerex17_${one_up_no}.log
-    "rerex"$aid_year_substr."_".${one_up_no}.".lis", # KS 09-JUN-2017 new parameter added, was rerex17_${one_up_no}.lis
+    "rerex".$aid_year_substr."_".${one_up_no}.".lis", # KS 09-JUN-2017 new parameter added, was rerex17_${one_up_no}.lis
     "rerexim_${one_up_no}.log",
     "rerexim_${one_up_no}.lis",
     "crdl".$aid_year_substr."in_".${one_up_no}.".xml" # KS 09-JUN-2017 new parameter added, was crdl17in_${one_up_no}.log
