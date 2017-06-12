@@ -1,5 +1,10 @@
 -- insert-rerex18-params.sql
 
+/* MODIFICATION HISTORY : 12-JUN-2017 KS
+                          Changes made to conform to REREX18 parameters according to
+                          Release Notes. Unsure about the last parameter - 99
+*/
+
 define aidy_code = &1
 define one_up_no = &2
 
